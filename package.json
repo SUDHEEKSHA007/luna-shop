@@ -1,0 +1,20 @@
+{
+  "name": "luna-accessories-store",
+  "version": "2.0.0",
+  "description": "Luna Accessories - Modern Luxury E-Commerce platform with Next.js & Python FastAPI backend",
+  "scripts": {
+    "dev": "./start.sh",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && ./run.sh",
+    "build": "cd frontend && npm run build"
+  },
+  "keywords": [
+    "nextjs",
+    "fastapi",
+    "ecommerce",
+    "luxury-jewelry"
+  ],
+  "author": "Luna Atelier",
+  "license": "MIT"
+}
+

@@ -1,0 +1,22 @@
+# Dependencies
+frontend/node_modules/
+backend/venv/
+backend/__pycache__/
+*.py[cod]
+
+# Next.js Build Output
+frontend/.next/
+frontend/out/
+
+# Database & Runtime
+backend/luna.db
+*.log
+
+# Environment & Local Secrets
+.env
+.env*.local
+frontend/.env*.local
+
+# OS Files
+.DS_Store
+Thumbs.db
