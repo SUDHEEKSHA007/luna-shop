@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -5,37 +6,44 @@ import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import {
   X,
-  History,
-  ShoppingBag,
-  PackageCheck,
   RotateCcw,
+  ArrowRight,
+  PackageCheck,
   Calendar,
   MapPin,
   CreditCard,
-  Sparkles,
 } from "lucide-react";
 
 export default function CartHistoryDrawer() {
-  const { cartHistory, isHistoryOpen, setIsHistoryOpen, reorder, setIsCartOpen } = useCart();
+  const {
+    cartHistory,
+    isHistoryOpen,
+    setIsHistoryOpen,
+    reorder,
+    setIsCartOpen,
+  } = useCart();
+
   const { user } = useAuth();
 
   if (!isHistoryOpen) return null;
 
-  const formatPrice = (val: number) => {
-    return new Intl.NumberFormat("en-IN", {
+  const formatPrice = (value: number) =>
+    new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
       maximumFractionDigits: 0,
-    }).format(val);
-  };
+    }).format(value);
 
   const formatDate = (dateStr: string) => {
     try {
-      const d = new Date(dateStr);
-      return d.toLocaleDateString("en-IN", {
-        year: "numeric",
-        month: "short",
+      const date = new Date(dateStr);
+
+      if (Number.isNaN(date.getTime())) return dateStr;
+
+      return date.toLocaleDateString("en-IN", {
         day: "numeric",
+        month: "long",
+        year: "numeric",
       });
     } catch {
       return dateStr;
@@ -43,154 +51,207 @@ export default function CartHistoryDrawer() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden">
+    <div className="fixed inset-0 z-[90]">
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-stone-900/50 backdrop-blur-xs transition-opacity duration-300"
+      <button
+        type="button"
+        aria-label="Close order history"
         onClick={() => setIsHistoryOpen(false)}
+        className="absolute inset-0 bg-[#211B16]/35 backdrop-blur-[2px]"
       />
 
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+      {/* Drawer */}
+      <div className="absolute inset-y-0 right-0 flex w-full justify-end">
         <aside
-          className="w-screen max-w-lg bg-white shadow-2xl flex flex-col border-l border-[#E7E2DA] animate-slide-in"
-          aria-label="Cart & Order History"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Order history"
+          className="flex h-full w-full max-w-[490px] flex-col bg-[#FCFBF9] shadow-2xl animate-slide-in"
         >
           {/* Header */}
-          <div className="p-5 border-b border-[#E7E2DA] flex items-center justify-between bg-[#FAF8F5]">
-            <div className="flex items-center gap-2">
-              <History className="w-5 h-5 text-[#B8976C]" />
-              <div>
-                <h2 className="font-serif text-xl font-medium text-stone-900">
-                  Cart History & Orders
-                </h2>
-                {user && (
-                  <p className="text-[11px] text-stone-500 font-light">
-                    Saved carts for {user.name} ({cartHistory.length} orders)
-                  </p>
-                )}
-              </div>
-            </div>
-            <button
-              onClick={() => setIsHistoryOpen(false)}
-              className="p-2 text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 rounded-full transition"
-              aria-label="Close cart history"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+          <header className="flex shrink-0 items-center justify-between border-b border-[#EAE7E1] px-6 py-6 sm:px-8">
+            <div>
+              <h2 className="font-serif text-[27px] font-normal tracking-tight text-[#29251F]">
+                Your orders
+              </h2>
 
-          {/* Orders List */}
-          <div className="flex-1 overflow-y-auto p-5 space-y-6">
+              <p className="mt-1 text-[11px] text-[#928A80]">
+                {user?.name
+                  ? `A record of your Luna purchases`
+                  : "Your purchase history"}
+                <span className="ml-2 text-[#A18462]">
+                  {cartHistory.length}
+                </span>
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsHistoryOpen(false)}
+              aria-label="Close order history"
+              className="flex h-9 w-9 items-center justify-center text-[#70675D] transition-colors hover:text-[#29251F]"
+            >
+              <X size={20} strokeWidth={1.4} />
+            </button>
+          </header>
+
+          {/* Order list */}
+          <div className="flex-1 overflow-y-auto px-6 sm:px-8">
             {cartHistory.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-3">
-                <div className="w-16 h-16 rounded-full bg-[#FAF8F5] border border-stone-200 flex items-center justify-center text-stone-400">
-                  <PackageCheck className="w-8 h-8 stroke-1" />
+              <div className="flex h-full min-h-[350px] flex-col items-center justify-center text-center">
+                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[#F1EEE8] text-[#A18462]">
+                  <PackageCheck size={28} strokeWidth={1.2} />
                 </div>
-                <p className="font-serif text-lg font-medium text-stone-700">No Cart History Yet</p>
-                <p className="text-xs text-stone-400 max-w-xs leading-relaxed">
-                  When you check out items from your cart, their permanent snapshots, receipts, and order tracking will appear here.
+
+                <h3 className="font-serif text-3xl font-normal text-[#29251F]">
+                  No orders yet.
+                </h3>
+
+                <p className="mt-3 max-w-[260px] text-xs leading-6 text-[#928A80]">
+                  Your purchases will find a home here. Explore the
+                  collection and discover your next favourite piece.
                 </p>
+
                 <button
+                  type="button"
                   onClick={() => {
                     setIsHistoryOpen(false);
                     setIsCartOpen(true);
                   }}
-                  className="mt-2 px-6 py-2.5 rounded-full bg-[#1C1917] text-white text-xs font-semibold uppercase tracking-widest hover:bg-[#B8976C] transition"
+                  className="mt-8 flex items-center gap-3 bg-[#29251F] px-6 py-3.5 text-[10px] uppercase tracking-[0.17em] text-white transition hover:bg-[#80694E]"
                 >
-                  View Active Cart
+                  View shopping bag
+                  <ArrowRight size={14} />
                 </button>
               </div>
             ) : (
-              cartHistory.map((order) => (
-                <div
-                  key={order.id}
-                  className="rounded-2xl border border-[#E7E2DA] bg-[#FAF8F5]/50 overflow-hidden shadow-xs hover:border-[#B8976C]/60 transition"
-                >
-                  {/* Order Top Bar */}
-                  <div className="p-4 bg-white border-b border-stone-100 flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-xs tracking-wider text-stone-900">
-                          {order.order_number}
-                        </span>
-                        <span
-                          className={`text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                            order.status === "Delivered"
-                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                              : "bg-amber-50 text-amber-700 border border-amber-200"
-                          }`}
-                        >
-                          {order.status}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[11px] text-stone-400 mt-0.5">
-                        <Calendar className="w-3 h-3" />
-                        <span>{formatDate(order.created_at)}</span>
-                      </div>
-                    </div>
+              <div>
+                <div className="flex items-center justify-between py-5">
+                  <span className="text-[10px] uppercase tracking-[0.17em] text-[#8C8175]">
+                    Purchase history
+                  </span>
 
-                    <div className="text-right">
-                      <span className="text-sm font-semibold text-stone-900">
-                        {formatPrice(order.total_amount)}
-                      </span>
-                      <p className="text-[10px] text-stone-400">
-                        {order.items.length} {order.items.length === 1 ? "item" : "items"}
-                      </p>
-                    </div>
-                  </div>
+                  <span className="text-[10px] text-[#A49A8F]">
+                    {cartHistory.length} orders
+                  </span>
+                </div>
 
-                  {/* Item Thumbnails / Snapshot */}
-                  <div className="p-4 space-y-3">
-                    {order.items.map((item) => (
-                      <div key={item.id} className="flex items-center gap-3 bg-white p-2.5 rounded-xl border border-stone-100">
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-12 h-12 rounded-lg object-cover bg-stone-100 shrink-0"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-xs font-semibold text-stone-900 truncate">
-                            {item.name}
-                          </h4>
-                          <p className="text-[10px] text-stone-500">
-                            Qty: {item.quantity} × {formatPrice(item.price)}
+                <div>
+                  {cartHistory.map((order) => (
+                    <section
+                      key={order.id}
+                      className="border-t border-[#EAE7E1] py-6"
+                    >
+                      {/* Order heading */}
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h3 className="text-xs font-medium tracking-wide text-[#29251F]">
+                              {order.order_number}
+                            </h3>
+
+                            <span
+                              className={`text-[9px] uppercase tracking-[0.13em] ${order.status === "Delivered"
+                                  ? "text-[#65745C]"
+                                  : "text-[#A18462]"
+                                }`}
+                            >
+                              {order.status}
+                            </span>
+                          </div>
+
+                          <div className="mt-2 flex items-center gap-1.5 text-[10px] text-[#928A80]">
+                            <Calendar size={12} strokeWidth={1.4} />
+                            {formatDate(order.created_at)}
+                          </div>
+                        </div>
+
+                        <div className="text-right">
+                          <p className="font-serif text-lg text-[#29251F]">
+                            {formatPrice(order.total_amount)}
+                          </p>
+                          <p className="mt-0.5 text-[10px] text-[#928A80]">
+                            {order.items.length}{" "}
+                            {order.items.length === 1 ? "piece" : "pieces"}
                           </p>
                         </div>
-                        <span className="text-xs font-semibold text-stone-800 shrink-0">
-                          {formatPrice(item.price * item.quantity)}
-                        </span>
                       </div>
-                    ))}
 
-                    {/* Metadata & Receipt Details */}
-                    <div className="pt-2 border-t border-stone-200/60 text-[11px] text-stone-500 space-y-1">
-                      {order.shipping_address && (
-                        <div className="flex items-center gap-1.5">
-                          <MapPin className="w-3 h-3 text-stone-400 shrink-0" />
-                          <span className="truncate">Delivered to: {order.shipping_address}</span>
+                      {/* Purchased products */}
+                      <div className="mt-5 space-y-4">
+                        {order.items.map((item) => (
+                          <div
+                            key={item.id}
+                            className="flex items-center gap-4"
+                          >
+                            <div className="h-[68px] w-[58px] shrink-0 overflow-hidden bg-[#F0EDE7]">
+                              <img
+                                src={item.image}
+                                alt={item.name}
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+
+                            <div className="min-w-0 flex-1">
+                              <h4 className="truncate font-serif text-[16px] text-[#29251F]">
+                                {item.name}
+                              </h4>
+
+                              <p className="mt-1 text-[10px] text-[#928A80]">
+                                Quantity: {item.quantity}
+                              </p>
+                            </div>
+
+                            <span className="shrink-0 text-xs text-[#51483F]">
+                              {formatPrice(item.price * item.quantity)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Order metadata */}
+                      {(order.shipping_address || order.payment_method) && (
+                        <div className="mt-5 space-y-2 border-t border-[#EEEAE4] pt-4">
+                          {order.shipping_address && (
+                            <div className="flex items-start gap-2 text-[10px] text-[#928A80]">
+                              <MapPin
+                                size={13}
+                                className="mt-0.5 shrink-0"
+                                strokeWidth={1.4}
+                              />
+                              <span className="leading-5">
+                                {order.shipping_address}
+                              </span>
+                            </div>
+                          )}
+
+                          {order.payment_method && (
+                            <div className="flex items-center gap-2 text-[10px] text-[#928A80]">
+                              <CreditCard
+                                size={13}
+                                strokeWidth={1.4}
+                              />
+                              <span>{order.payment_method}</span>
+                            </div>
+                          )}
                         </div>
                       )}
-                      {order.payment_method && (
-                        <div className="flex items-center gap-1.5">
-                          <CreditCard className="w-3 h-3 text-stone-400 shrink-0" />
-                          <span>Method: {order.payment_method}</span>
-                        </div>
-                      )}
-                    </div>
 
-                    {/* Reorder Button */}
-                    <div className="pt-2 flex justify-end">
-                      <button
-                        onClick={() => reorder(order)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-900 hover:bg-[#B8976C] text-white text-[11px] font-semibold tracking-wider uppercase transition shadow-xs"
-                      >
-                        <RotateCcw className="w-3 h-3 text-[#DFC4A1]" />
-                        <span>Reorder Items</span>
-                      </button>
-                    </div>
-                  </div>
+                      {/* Reorder */}
+                      <div className="mt-5 flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => reorder(order)}
+                          className="flex items-center gap-2 border border-[#DCD4C9] px-4 py-2.5 text-[9px] uppercase tracking-[0.16em] text-[#51483F] transition-colors hover:border-[#29251F] hover:bg-[#29251F] hover:text-white"
+                        >
+                          <RotateCcw size={12} strokeWidth={1.5} />
+                          Reorder
+                        </button>
+                      </div>
+                    </section>
+                  ))}
                 </div>
-              ))
+              </div>
             )}
           </div>
         </aside>
@@ -198,4 +259,3 @@ export default function CartHistoryDrawer() {
     </div>
   );
 }
-

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from "react";
@@ -5,16 +6,14 @@ import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import {
   X,
-  Trash2,
   Plus,
   Minus,
-  ShoppingBag,
+  Trash2,
   ArrowRight,
-  Sparkles,
-  History,
-  Tag,
-  ShieldCheck,
+  Check,
   CheckCircle2,
+  Tag,
+  History,
 } from "lucide-react";
 
 export default function CartDrawer() {
@@ -24,43 +23,62 @@ export default function CartDrawer() {
     setIsCartOpen,
     updateQuantity,
     removeFromCart,
-    clearCart,
     checkout,
     setIsHistoryOpen,
   } = useCart();
+
   const { user, setIsAuthModalOpen, demoLogin } = useAuth();
 
   const [promoInput, setPromoInput] = useState("");
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
-  const [shippingAddress, setShippingAddress] = useState("14 Kensington Garden, Apt 4B, Mumbai");
+  const [promoError, setPromoError] = useState("");
+  const [shippingAddress] = useState(
+    "14 Kensington Garden, Apt 4B, Mumbai"
+  );
   const [isCheckingOut, setIsCheckingOut] = useState(false);
-  const [checkoutSuccessOrder, setCheckoutSuccessOrder] = useState<any | null>(null);
+  const [checkoutSuccessOrder, setCheckoutSuccessOrder] =
+    useState<any | null>(null);
 
   if (!isCartOpen) return null;
 
-  const formatPrice = (val: number) => {
-    return new Intl.NumberFormat("en-IN", {
+  const formatPrice = (value: number) =>
+    new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
       maximumFractionDigits: 0,
-    }).format(val);
-  };
+    }).format(value);
 
-  const freeShippingThreshold = 2000;
-  const progressPercent = Math.min(100, Math.round((cart.subtotal / freeShippingThreshold) * 100));
-  const amountRemaining = Math.max(0, freeShippingThreshold - cart.subtotal);
+  const shippingThreshold = 2000;
+  const amountRemaining = Math.max(
+    0,
+    shippingThreshold - cart.subtotal
+  );
+  const progress = Math.min(
+    100,
+    (cart.subtotal / shippingThreshold) * 100
+  );
+
+  const discountAmount = appliedPromo
+    ? Math.round(cart.subtotal * 0.1)
+    : 0;
+
+  const finalTotal = Math.max(0, cart.total - discountAmount);
+
+  const closeCart = () => {
+    setIsCartOpen(false);
+    setCheckoutSuccessOrder(null);
+  };
 
   const handleApplyPromo = () => {
     const code = promoInput.trim().toUpperCase();
+
     if (code === "LUNA10" || code === "WELCOME10") {
       setAppliedPromo(code);
+      setPromoError("");
     } else {
-      alert("Invalid code. Use code 'LUNA10' for 10% off!");
+      setPromoError("Invalid promo code.");
     }
   };
-
-  const discountAmount = appliedPromo ? Math.round(cart.subtotal * 0.1) : 0;
-  const finalTotal = Math.max(0, cart.total - discountAmount);
 
   const handleCheckout = async () => {
     if (!user) {
@@ -69,322 +87,424 @@ export default function CartDrawer() {
     }
 
     setIsCheckingOut(true);
+
     try {
-      const order = await checkout(shippingAddress, "UPI / Card", appliedPromo || undefined);
+      const order = await checkout(
+        shippingAddress,
+        "UPI / Card",
+        appliedPromo || undefined
+      );
+
       setCheckoutSuccessOrder(order);
     } catch {
-      // handled in context
+      // Errors are handled by CartContext.
     } finally {
       setIsCheckingOut(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden">
+    <div className="fixed inset-0 z-[90]">
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-stone-900/50 backdrop-blur-xs transition-opacity duration-300"
-        onClick={() => {
-          setIsCartOpen(false);
-          setCheckoutSuccessOrder(null);
-        }}
+      <button
+        type="button"
+        aria-label="Close shopping bag"
+        onClick={closeCart}
+        className="absolute inset-0 bg-[#211B16]/35 backdrop-blur-[2px]"
       />
 
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+      {/* Drawer */}
+      <div className="absolute inset-y-0 right-0 flex w-full justify-end">
         <aside
-          className="w-screen max-w-md bg-white shadow-2xl flex flex-col border-l border-[#E7E2DA] animate-slide-in"
-          aria-label="Shopping Cart Drawer"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Shopping bag"
+          className="flex h-full w-full max-w-[460px] flex-col bg-[#FCFBF9] shadow-2xl animate-slide-in"
         >
           {/* Header */}
-          <div className="p-5 border-b border-[#E7E2DA] flex items-center justify-between bg-[#FAF8F5]">
-            <div className="flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5 text-[#B8976C]" />
-              <h2 className="font-serif text-xl font-medium text-stone-900">
-                Shopping Cart ({cart.total_items})
+          <header className="flex shrink-0 items-center justify-between border-b border-[#EAE7E1] px-6 py-6 sm:px-8">
+            <div>
+              <h2 className="font-serif text-[27px] font-normal tracking-tight text-[#29251F]">
+                Shopping bag
+                <span className="ml-2 font-sans text-sm text-[#999087]">
+                  ({cart.total_items})
+                </span>
               </h2>
-            </div>
-            <button
-              onClick={() => {
-                setIsCartOpen(false);
-                setCheckoutSuccessOrder(null);
-              }}
-              className="p-2 text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 rounded-full transition"
-              aria-label="Close cart"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Success State if just checked out */}
-          {checkoutSuccessOrder ? (
-            <div className="flex-1 p-6 flex flex-col items-center justify-center text-center space-y-4">
-              <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center">
-                <CheckCircle2 className="w-8 h-8" />
-              </div>
-              <h3 className="font-serif text-2xl font-semibold text-stone-900">
-                Order Confirmed!
-              </h3>
-              <p className="text-xs text-stone-500 max-w-xs">
-                Order <strong className="text-stone-900">{checkoutSuccessOrder.order_number}</strong> has been placed and saved to your Cart History.
+              <p className="mt-1 text-[11px] text-[#928A80]">
+                Your selected pieces
               </p>
-              <div className="p-4 rounded-xl bg-stone-50 border border-stone-200 w-full text-left text-xs space-y-1.5">
-                <div className="flex justify-between">
-                  <span className="text-stone-500">Order Number:</span>
-                  <span className="font-semibold text-stone-900">{checkoutSuccessOrder.order_number}</span>
+            </div>
+
+            <button
+              type="button"
+              onClick={closeCart}
+              aria-label="Close cart"
+              className="flex h-9 w-9 items-center justify-center text-[#70675D] transition-colors hover:text-[#29251F]"
+            >
+              <X size={20} strokeWidth={1.4} />
+            </button>
+          </header>
+
+          {checkoutSuccessOrder ? (
+            /* Success */
+            <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
+              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-[#EDF0E9] text-[#65745C]">
+                <CheckCircle2 size={27} strokeWidth={1.4} />
+              </div>
+
+              <span className="text-[10px] uppercase tracking-[0.2em] text-[#9A7956]">
+                Order completed
+              </span>
+
+              <h3 className="mt-3 font-serif text-3xl font-normal text-[#29251F]">
+                Thank you.
+              </h3>
+
+              <p className="mt-3 max-w-xs text-xs leading-6 text-[#898075]">
+                Your order has been placed successfully. We hope you love
+                your new pieces.
+              </p>
+
+              <div className="mt-8 w-full border-y border-[#EAE7E1] py-4 text-left">
+                <div className="flex justify-between py-2 text-xs">
+                  <span className="text-[#928A80]">Order reference</span>
+                  <span className="text-[#29251F]">
+                    {checkoutSuccessOrder.order_number}
+                  </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-stone-500">Total Paid:</span>
-                  <span className="font-semibold text-stone-900">{formatPrice(checkoutSuccessOrder.total_amount)}</span>
+                <div className="flex justify-between py-2 text-xs">
+                  <span className="text-[#928A80]">Total paid</span>
+                  <span className="font-medium text-[#29251F]">
+                    {formatPrice(checkoutSuccessOrder.total_amount)}
+                  </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-stone-500">Items:</span>
-                  <span className="text-stone-700">{checkoutSuccessOrder.items.length} pieces</span>
+                <div className="flex justify-between py-2 text-xs">
+                  <span className="text-[#928A80]">Items</span>
+                  <span className="text-[#29251F]">
+                    {checkoutSuccessOrder.items.length}
+                  </span>
                 </div>
               </div>
-              <div className="flex flex-col gap-2 w-full pt-4">
-                <button
-                  onClick={() => {
-                    setCheckoutSuccessOrder(null);
-                    setIsCartOpen(false);
-                    setIsHistoryOpen(true);
-                  }}
-                  className="w-full py-3 px-4 rounded-xl bg-[#1C1917] text-white hover:bg-[#292524] text-xs font-semibold tracking-widest uppercase transition flex items-center justify-center gap-2"
-                >
-                  <History className="w-4 h-4 text-[#DFC4A1]" />
-                  <span>View All Cart History</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setCheckoutSuccessOrder(null);
-                    setIsCartOpen(false);
-                  }}
-                  className="w-full py-2.5 px-4 rounded-xl border border-stone-300 text-stone-700 hover:bg-stone-50 text-xs font-semibold uppercase tracking-wider transition"
-                >
-                  Continue Shopping
-                </button>
-              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setCheckoutSuccessOrder(null);
+                  setIsCartOpen(false);
+                  setIsHistoryOpen(true);
+                }}
+                className="mt-8 flex w-full items-center justify-center gap-3 bg-[#29251F] px-5 py-4 text-[10px] uppercase tracking-[0.17em] text-white transition hover:bg-[#80694E]"
+              >
+                View order history
+                <ArrowRight size={15} />
+              </button>
+
+              <button
+                type="button"
+                onClick={closeCart}
+                className="mt-5 text-[10px] uppercase tracking-[0.16em] text-[#82786E] hover:text-[#29251F]"
+              >
+                Continue shopping
+              </button>
             </div>
           ) : (
             <>
-              {/* Free Shipping Progress Indicator */}
-              <div className="bg-[#F5F1EB] px-5 py-3 border-b border-[#E7E2DA]">
-                <div className="flex items-center justify-between text-xs mb-1.5">
-                  <span className="font-medium text-stone-800">
-                    {amountRemaining === 0 ? (
-                      <span className="text-emerald-700 font-semibold flex items-center gap-1">
-                        <Sparkles className="w-3.5 h-3.5 text-[#B8976C]" />
-                        Complimentary Express Shipping Unlocked!
-                      </span>
-                    ) : (
-                      <>
-                        Add <strong className="text-stone-900">{formatPrice(amountRemaining)}</strong> for Free Shipping
-                      </>
-                    )}
-                  </span>
-                  <span className="text-[11px] text-stone-500">{progressPercent}%</span>
-                </div>
-                <div className="w-full bg-stone-200 rounded-full h-1.5 overflow-hidden">
-                  <div
-                    className="bg-[#B8976C] h-full transition-all duration-500 rounded-full"
-                    style={{ width: `${progressPercent}%` }}
-                  />
-                </div>
-              </div>
+              {/* Shipping progress */}
+              {cart.items.length > 0 && (
+                <div className="shrink-0 border-b border-[#EAE7E1] px-6 py-4 sm:px-8">
+                  <div className="mb-2 flex justify-between gap-3 text-[11px]">
+                    <span className="text-[#71685E]">
+                      {amountRemaining > 0
+                        ? `You're ${formatPrice(amountRemaining)} away from free shipping`
+                        : "You've unlocked free shipping"}
+                    </span>
+                    <span className="shrink-0 text-[#8A795F]">
+                      {Math.round(progress)}%
+                    </span>
+                  </div>
 
-              {/* Items List */}
-              <div className="flex-1 overflow-y-auto p-5 space-y-4">
+                  <div className="h-[3px] w-full bg-[#EAE6DF]">
+                    <div
+                      className="h-full bg-[#A18462] transition-all duration-500"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Cart items */}
+              <div className="flex-1 overflow-y-auto px-6 sm:px-8">
                 {cart.items.length === 0 ? (
-                  <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-3">
-                    <div className="w-16 h-16 rounded-full bg-[#FAF8F5] border border-stone-200 flex items-center justify-center text-stone-400">
-                      <ShoppingBag className="w-8 h-8 stroke-1" />
-                    </div>
-                    <p className="font-serif text-lg font-medium text-stone-700">Your cart is empty</p>
-                    <p className="text-xs text-stone-400 max-w-xs">
-                      Explore our handcrafted earrings, necklaces, and rings to begin your collection.
+                  <div className="flex h-full flex-col items-center justify-center text-center">
+                    <h3 className="font-serif text-3xl font-normal text-[#29251F]">
+                      Your bag is empty.
+                    </h3>
+
+                    <p className="mt-3 max-w-[250px] text-xs leading-6 text-[#928A80]">
+                      Find something beautiful to make your own.
                     </p>
+
                     <button
-                      onClick={() => setIsCartOpen(false)}
-                      className="mt-2 px-6 py-2.5 rounded-full bg-[#1C1917] text-white text-xs font-medium uppercase tracking-widest hover:bg-[#B8976C] transition"
+                      type="button"
+                      onClick={closeCart}
+                      className="mt-7 border-b border-[#A18462] pb-1 text-[10px] uppercase tracking-[0.18em] text-[#80694E]"
                     >
-                      Browse Jewelry
+                      Explore collection
                     </button>
                   </div>
                 ) : (
-                  cart.items.map((item) => (
-                    <div
-                      key={item.product_id}
-                      className="flex gap-4 p-3 rounded-2xl border border-stone-100 hover:border-stone-200 bg-white transition group"
-                    >
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="w-20 h-20 rounded-xl object-cover bg-stone-100 shrink-0"
-                      />
-                      <div className="flex-1 flex flex-col justify-between">
-                        <div className="flex justify-between items-start gap-2">
-                          <div>
-                            <h4 className="font-serif text-sm font-semibold text-stone-900 line-clamp-1">
-                              {item.name}
-                            </h4>
-                            {item.category && (
-                              <p className="text-[10px] uppercase tracking-wider text-[#91724B]">
-                                {item.category}
-                              </p>
-                            )}
-                          </div>
-                          <button
-                            onClick={() => removeFromCart(item.product_id)}
-                            className="text-stone-300 hover:text-rose-500 transition p-1"
-                            title="Remove item"
-                            aria-label={`Remove ${item.name}`}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                  <div>
+                    <div className="flex items-center justify-between py-5">
+                      <span className="text-[10px] uppercase tracking-[0.17em] text-[#8C8175]">
+                        Items in your bag
+                      </span>
+                      <span className="text-[10px] text-[#A49A8F]">
+                        {cart.total_items} items
+                      </span>
+                    </div>
+
+                    {cart.items.map((item) => (
+                      <div
+                        key={item.product_id}
+                        className="flex gap-4 border-t border-[#EAE7E1] py-5"
+                      >
+                        <div className="h-[112px] w-[88px] shrink-0 overflow-hidden bg-[#F0EDE7]">
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="h-full w-full object-cover"
+                          />
                         </div>
 
-                        <div className="flex items-center justify-between pt-2">
-                          {/* Quantity +/- */}
-                          <div className="flex items-center border border-stone-200 rounded-lg bg-stone-50">
+                        <div className="flex min-w-0 flex-1 flex-col justify-between">
+                          <div className="flex justify-between gap-2">
+                            <div className="min-w-0">
+                              {item.category && (
+                                <span className="mb-1 block text-[9px] uppercase tracking-[0.15em] text-[#9A7956]">
+                                  {item.category}
+                                </span>
+                              )}
+
+                              <h3 className="font-serif text-[17px] font-normal leading-snug text-[#29251F]">
+                                {item.name}
+                              </h3>
+
+                              <p className="mt-1 text-xs text-[#928A80]">
+                                {formatPrice(item.price)}
+                              </p>
+                            </div>
+
                             <button
-                              onClick={() => updateQuantity(item.product_id, item.quantity - 1)}
-                              className="p-1 text-stone-600 hover:text-stone-900 transition"
-                              aria-label="Decrease quantity"
+                              type="button"
+                              onClick={() =>
+                                removeFromCart(item.product_id)
+                              }
+                              aria-label={`Remove ${item.name}`}
+                              className="h-7 shrink-0 text-[#A69D92] transition hover:text-[#A65E5E]"
                             >
-                              <Minus className="w-3 h-3" />
-                            </button>
-                            <span className="px-2.5 text-xs font-semibold text-stone-800">
-                              {item.quantity}
-                            </span>
-                            <button
-                              onClick={() => updateQuantity(item.product_id, item.quantity + 1)}
-                              className="p-1 text-stone-600 hover:text-stone-900 transition"
-                              aria-label="Increase quantity"
-                            >
-                              <Plus className="w-3 h-3" />
+                              <Trash2 size={15} strokeWidth={1.4} />
                             </button>
                           </div>
 
-                          <span className="text-xs font-semibold text-stone-900">
-                            {formatPrice(item.price * item.quantity)}
-                          </span>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  updateQuantity(
+                                    item.product_id,
+                                    item.quantity - 1
+                                  )
+                                }
+                                aria-label="Decrease quantity"
+                                className="text-[#82786E] hover:text-[#29251F]"
+                              >
+                                <Minus size={13} />
+                              </button>
+
+                              <span className="text-xs tabular-nums text-[#29251F]">
+                                {item.quantity}
+                              </span>
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  updateQuantity(
+                                    item.product_id,
+                                    item.quantity + 1
+                                  )
+                                }
+                                aria-label="Increase quantity"
+                                className="text-[#82786E] hover:text-[#29251F]"
+                              >
+                                <Plus size={13} />
+                              </button>
+                            </div>
+
+                            <span className="text-xs font-medium text-[#29251F]">
+                              {formatPrice(item.price * item.quantity)}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))
+                    ))}
+                  </div>
                 )}
               </div>
 
-              {/* Cart Footer */}
+              {/* Checkout footer */}
               {cart.items.length > 0 && (
-                <div className="border-t border-[#E7E2DA] p-5 bg-[#FAF8F5] space-y-4">
-                  {/* Promo Code Input */}
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <Tag className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-3" />
+                <footer className="shrink-0 border-t border-[#EAE7E1] bg-white px-6 pb-6 pt-5 sm:px-8">
+                  {/* Promo code */}
+                  <div className="mb-5">
+                    <div className="flex items-center gap-3 border-b border-[#E4DED5] pb-2">
+                      <Tag size={14} className="text-[#9A7956]" />
+
                       <input
                         type="text"
-                        placeholder="Promo code (e.g. LUNA10)"
                         value={promoInput}
-                        onChange={(e) => setPromoInput(e.target.value)}
-                        className="w-full bg-white border border-stone-200 rounded-xl pl-9 pr-3 py-2 text-xs text-stone-800 uppercase placeholder:normal-case outline-none focus:border-[#B8976C]"
+                        disabled={!!appliedPromo}
+                        onChange={(e) => {
+                          setPromoInput(e.target.value);
+                          setPromoError("");
+                        }}
+                        placeholder="Discount code"
+                        className="min-w-0 flex-1 bg-transparent py-2 text-xs uppercase tracking-wider text-[#29251F] outline-none placeholder:normal-case placeholder:tracking-normal placeholder:text-[#A69D92]"
                       />
-                    </div>
-                    <button
-                      onClick={handleApplyPromo}
-                      className="px-4 py-2 bg-stone-200 hover:bg-stone-300 rounded-xl text-xs font-semibold text-stone-800 tracking-wider transition"
-                    >
-                      Apply
-                    </button>
-                  </div>
-                  {appliedPromo && (
-                    <div className="flex items-center justify-between text-xs text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
-                      <span>Code <strong>{appliedPromo}</strong> applied (10% off)</span>
-                      <button onClick={() => setAppliedPromo(null)} className="text-stone-400 hover:text-stone-700">
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  )}
 
-                  {/* Summary Rows */}
-                  <div className="space-y-1.5 text-xs text-stone-600">
-                    <div className="flex justify-between">
-                      <span>Subtotal</span>
-                      <span className="font-medium text-stone-900">{formatPrice(cart.subtotal)}</span>
+                      {appliedPromo ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAppliedPromo(null);
+                            setPromoInput("");
+                          }}
+                          className="text-[10px] uppercase tracking-wider text-[#A65E5E]"
+                        >
+                          Remove
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleApplyPromo}
+                          className="text-[10px] uppercase tracking-wider text-[#80694E] hover:text-[#29251F]"
+                        >
+                          Apply
+                        </button>
+                      )}
                     </div>
-                    <div className="flex justify-between">
-                      <span>Shipping</span>
-                      <span className="font-medium text-stone-900">
-                        {cart.shipping === 0 ? "Complimentary" : formatPrice(cart.shipping)}
+
+                    {promoError && (
+                      <p className="mt-2 text-[10px] text-[#A65E5E]">
+                        {promoError}
+                      </p>
+                    )}
+
+                    {appliedPromo && (
+                      <p className="mt-2 flex items-center gap-1.5 text-[10px] text-[#65745C]">
+                        <Check size={12} />
+                        {appliedPromo} applied successfully
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Price summary */}
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-xs text-[#81786E]">
+                      <span>Subtotal</span>
+                      <span className="text-[#29251F]">
+                        {formatPrice(cart.subtotal)}
                       </span>
                     </div>
+
+                    <div className="flex justify-between text-xs text-[#81786E]">
+                      <span>Shipping</span>
+                      <span className="text-[#65745C]">
+                        {cart.shipping === 0
+                          ? "Free"
+                          : formatPrice(cart.shipping)}
+                      </span>
+                    </div>
+
                     {discountAmount > 0 && (
-                      <div className="flex justify-between text-emerald-700">
+                      <div className="flex justify-between text-xs text-[#65745C]">
                         <span>Discount</span>
                         <span>-{formatPrice(discountAmount)}</span>
                       </div>
                     )}
-                    <div className="flex justify-between text-sm font-semibold text-stone-900 pt-2 border-t border-stone-200">
-                      <span>Estimated Total</span>
-                      <span>{formatPrice(finalTotal)}</span>
+
+                    <div className="flex items-center justify-between border-t border-[#EAE7E1] pt-4">
+                      <span className="font-serif text-lg text-[#29251F]">
+                        Total
+                      </span>
+                      <span className="font-serif text-[22px] text-[#29251F]">
+                        {formatPrice(finalTotal)}
+                      </span>
                     </div>
                   </div>
 
-                  {/* Auth Callout if Guest */}
+                  {/* Sign in */}
                   {!user && (
-                    <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200/70 text-xs text-stone-700 flex flex-col gap-2">
-                      <div className="flex items-start gap-2">
-                        <Sparkles className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                        <p className="text-[11px] leading-tight">
-                          Sign in to sync your cart across devices and save your complete Cart & Order History.
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
+                    <div className="mt-4 flex items-center justify-between gap-3 text-[10px] text-[#81786E]">
+                      <span>Have a Luna account?</span>
+
+                      <div className="flex gap-3">
                         <button
+                          type="button"
                           onClick={() => setIsAuthModalOpen(true)}
-                          className="flex-1 py-1.5 rounded-lg bg-[#1C1917] text-white text-[11px] font-semibold hover:bg-stone-800 transition"
+                          className="text-[#80694E] underline underline-offset-2"
                         >
-                          Sign In
+                          Sign in
                         </button>
+
                         <button
+                          type="button"
                           onClick={demoLogin}
-                          className="flex-1 py-1.5 rounded-lg bg-white border border-stone-300 text-stone-800 text-[11px] font-medium hover:bg-stone-50 transition"
+                          className="text-[#80694E] underline underline-offset-2"
                         >
-                          1-Click Demo
+                          Demo
                         </button>
                       </div>
                     </div>
                   )}
 
-                  {/* Checkout CTA Button */}
+                  {/* Checkout */}
                   <button
+                    type="button"
                     onClick={handleCheckout}
                     disabled={isCheckingOut}
-                    className="w-full py-3.5 px-4 rounded-xl bg-[#1C1917] hover:bg-[#B8976C] text-white text-xs font-semibold tracking-widest uppercase transition flex items-center justify-center gap-2 shadow-lg disabled:opacity-60"
+                    className="mt-5 flex w-full items-center justify-between bg-[#29251F] px-5 py-4 text-white transition-colors duration-300 hover:bg-[#80694E] disabled:cursor-wait disabled:opacity-60"
                   >
-                    <span>
+                    <span className="text-[10px] font-medium uppercase tracking-[0.18em]">
                       {isCheckingOut
-                        ? "Saving & Processing..."
+                        ? "Processing..."
                         : user
-                        ? "Save & Complete Checkout"
-                        : "Sign In to Checkout & Save History"}
+                          ? "Continue to checkout"
+                          : "Sign in to checkout"}
                     </span>
-                    <ArrowRight className="w-4 h-4 text-[#DFC4A1]" />
+
+                    <ArrowRight size={16} strokeWidth={1.5} />
                   </button>
 
-                  {/* History shortcut link */}
+                  <div className="mt-4 flex items-center justify-center gap-2 text-[9px] tracking-wide text-[#A0978C]">
+                    <CheckCircle2 size={12} strokeWidth={1.4} />
+                    Secure checkout
+                  </div>
+
                   {user && (
                     <button
+                      type="button"
                       onClick={() => {
                         setIsCartOpen(false);
                         setIsHistoryOpen(true);
                       }}
-                      className="w-full text-center text-xs text-[#91724B] hover:text-[#1C1917] font-medium flex items-center justify-center gap-1.5 transition"
+                      className="mt-3 flex w-full items-center justify-center gap-2 text-[10px] text-[#8A8075] transition hover:text-[#29251F]"
                     >
-                      <History className="w-3.5 h-3.5" />
-                      <span>View Past Cart History & Orders</span>
+                      <History size={13} />
+                      Order history
                     </button>
                   )}
-                </div>
+                </footer>
               )}
             </>
           )}
@@ -393,4 +513,3 @@ export default function CartDrawer() {
     </div>
   );
 }
-

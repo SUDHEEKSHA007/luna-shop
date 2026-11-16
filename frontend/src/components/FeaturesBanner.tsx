@@ -1,57 +1,65 @@
+
 "use client";
 
 import React from "react";
-import { Truck, Gem, RefreshCw, Gift } from "lucide-react";
 
 export default function FeaturesBanner() {
   const features = [
     {
-      icon: Truck,
-      title: "Complimentary Delivery",
-      desc: "Free insured shipping on orders over ₹2,000 across India.",
+      title: "Considered delivery",
+      description: "Complimentary insured shipping across India on orders above ₹2,000.",
     },
     {
-      icon: Gem,
-      title: "Certified 18K Vermeil",
-      desc: "Thick 2.5-micron gold over solid 925 sterling silver & natural pearls.",
+      title: "The finest details",
+      description: "18K gold vermeil over sterling silver, finished with natural pearls.",
     },
     {
-      icon: RefreshCw,
-      title: "14-Day Exchanges",
-      desc: "Complimentary resizing and returns with door-step collection.",
+      title: "Made to stay",
+      description: "A 14-day exchange and return window, with doorstep collection.",
     },
     {
-      icon: Gift,
-      title: "Artisanal Velvet Box",
-      desc: "Each order arrives in signature embossed presentation box ready for gifting.",
+      title: "A beautiful arrival",
+      description: "Every piece presented in our signature embossed jewellery box.",
     },
   ];
 
   return (
-    <section className="py-12 bg-white border-y border-[#E7E2DA]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {features.map((item, idx) => {
-            const Icon = item.icon;
-            return (
-              <div key={idx} className="flex items-start gap-4 p-2">
-                <div className="w-12 h-12 rounded-2xl bg-[#FAF8F5] border border-[#E7E2DA] flex items-center justify-center text-[#B8976C] shrink-0">
-                  <Icon className="w-6 h-6 stroke-[1.5]" />
-                </div>
-                <div>
-                  <h3 className="font-serif text-base font-semibold text-stone-900">
-                    {item.title}
-                  </h3>
-                  <p className="text-xs text-stone-500 font-light mt-1 leading-relaxed">
-                    {item.desc}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
+    <section className="bg-[#F7F4EF] text-[#28231E]">
+      <div className="mx-auto max-w-[1600px] px-6 sm:px-10 lg:px-20">
+
+        {/* Top divider */}
+        <div className="h-px w-full bg-[#DCD4C9]" />
+
+        {/* Editorial feature strip */}
+        <div className="grid grid-cols-1 py-10 sm:grid-cols-2 lg:grid-cols-4 lg:py-14">
+
+          {features.map((feature, index) => (
+            <div
+              key={feature.title}
+              className={`py-5 lg:px-8 lg:py-2 ${index === 0 ? "lg:pl-0" : ""
+                } ${index !== 0
+                  ? "border-t border-[#DCD4C9] lg:border-l lg:border-t-0"
+                  : ""
+                }`}
+            >
+
+              <h3 className="font-serif text-[21px] font-normal tracking-tight text-[#383027] sm:text-[23px]">
+                {feature.title}
+              </h3>
+
+              <p className="mt-3 max-w-[260px] text-[12px] font-light leading-[1.9] text-[#82796F]">
+                {feature.description}
+              </p>
+
+            </div>
+          ))}
+
         </div>
+
+        {/* Bottom divider */}
+        <div className="h-px w-full bg-[#DCD4C9]" />
+
       </div>
     </section>
   );
 }
-

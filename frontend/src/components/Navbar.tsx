@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -10,10 +11,10 @@ import {
   Heart,
   History,
   LogOut,
-  Sparkles,
   Menu,
   X,
   ChevronDown,
+  ArrowUpRight,
 } from "lucide-react";
 
 interface NavbarProps {
@@ -29,8 +30,16 @@ export default function Navbar({
   selectedCategory,
   setSelectedCategory,
 }: NavbarProps) {
-  const { user, logout, setIsAuthModalOpen, demoLogin } = useAuth();
-  const { cart, wishlist, setIsCartOpen, setIsHistoryOpen, cartHistory } = useCart();
+  const { user, logout, setIsAuthModalOpen } = useAuth();
+
+  const {
+    cart,
+    wishlist,
+    setIsCartOpen,
+    setIsHistoryOpen,
+    cartHistory,
+  } = useCart();
+
   const [isScrolled, setIsScrolled] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -38,174 +47,162 @@ export default function Navbar({
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      setIsScrolled(window.scrollY > 40);
     };
+
+    handleScroll();
+
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const categories = [
+    { label: "All Pieces", value: "all" },
+    { label: "Earrings", value: "Earrings" },
+    { label: "Necklaces", value: "Necklaces" },
+    { label: "Bracelets", value: "Bracelets" },
+    { label: "Rings", value: "Rings" },
+  ];
+
+  const selectCategory = (category: string) => {
+    setSelectedCategory(category);
+    setMobileMenuOpen(false);
+
+    const shop = document.getElementById("shop");
+
+    if (shop) {
+      shop.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const iconButton =
+    "relative flex h-10 w-10 items-center justify-center rounded-full text-white/90 transition-all duration-300 hover:bg-white/15 hover:text-white";
+
   return (
-    <header className="sticky top-0 z-40 w-full transition-all duration-300">
-      {/* Top Announcement Bar */}
-      <div className="bg-[#1C1917] text-[#DFC4A1] text-xs font-medium py-2 px-4 text-center tracking-widest uppercase flex items-center justify-center gap-3">
-        <span className="hidden md:inline">✦</span>
-        <span>Complimentary Express Shipping on Orders Over ₹2,000</span>
-        <span className="hidden md:inline text-stone-500">|</span>
-        <span className="hidden md:inline text-stone-300">Use code <strong className="text-white font-semibold">LUNA10</strong> for 10% off</span>
-        <span className="hidden md:inline">✦</span>
-      </div>
+    <header className="fixed top-0 left-0 z-50 w-full">
 
-      {/* Main Navigation Bar */}
+      {/* Main floating navigation */}
       <nav
-        className={`w-full transition-all duration-300 ${
-          isScrolled
-            ? "bg-[#FAF8F5]/95 backdrop-blur-md shadow-sm border-b border-[#E7E2DA] py-3"
-            : "bg-[#FAF8F5] py-4"
-        }`}
+        className={`w-full transition-all duration-500 ${isScrolled
+            ? "border-b border-white/10 bg-[#17110D]/75 py-3 shadow-lg backdrop-blur-2xl"
+            : "border-b border-white/10 bg-transparent py-5 md:py-7"
+          }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[1800px] px-5 sm:px-8 lg:px-16">
+
           <div className="flex items-center justify-between gap-4">
-            {/* Mobile menu trigger */}
-            <div className="flex items-center lg:hidden">
+
+            {/* Left: Brand */}
+            <div className="flex flex-1 items-center">
+
               <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 text-[#1C1917] hover:text-[#B8976C] transition"
-                aria-label="Toggle navigation menu"
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                className="group flex flex-col items-center text-white"
+                aria-label="Luna Atelier home"
               >
-                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                <span className="font-serif text-[26px] font-normal leading-none tracking-[0.3em] transition-opacity group-hover:opacity-75 md:text-[30px]">
+                  LUNA
+                </span>
+
+                <span className="mt-1 text-[8px] font-medium uppercase tracking-[0.48em] text-white/65">
+                  Atelier
+                </span>
               </button>
+
             </div>
 
-            {/* Brand Logo & Monogram */}
-            <div className="flex-1 lg:flex-none text-center lg:text-left">
-              <a href="#" className="inline-block group">
-                <div className="flex flex-col items-center lg:items-start">
-                  <span className="font-serif text-2xl sm:text-3xl tracking-[0.25em] font-semibold text-[#1C1917] group-hover:text-[#B8976C] transition">
-                    L U N A
-                  </span>
-                  <span className="text-[9px] tracking-[0.35em] text-[#78716C] uppercase font-medium -mt-1">
-                    Accessories & Atelier
-                  </span>
-                </div>
-              </a>
-            </div>
+            {/* Center: Glass navigation pill */}
+            <div className="hidden lg:flex items-center">
 
-            {/* Desktop Navigation Links */}
-            <ul className="hidden lg:flex items-center gap-8 text-xs uppercase tracking-[0.2em] font-medium text-[#1C1917]">
-              <li>
-                <button
-                  onClick={() => setSelectedCategory("all")}
-                  className={`hover:text-[#B8976C] transition pb-1 border-b-2 ${
-                    selectedCategory === "all" ? "border-[#B8976C] text-[#B8976C]" : "border-transparent"
-                  }`}
+              <div className="flex items-center gap-1 rounded-full border border-white/20 bg-white/[0.09] p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.12)] backdrop-blur-2xl">
+
+                {categories.map((category) => (
+                  <button
+                    key={category.value}
+                    onClick={() => selectCategory(category.value)}
+                    className={`whitespace-nowrap rounded-full px-4 py-3 text-[10px] font-medium uppercase tracking-[0.13em] transition-all duration-300 ${selectedCategory === category.value
+                        ? "bg-white/20 text-white shadow-sm"
+                        : "text-white/70 hover:bg-white/10 hover:text-white"
+                      }`}
+                  >
+                    {category.label}
+                  </button>
+                ))}
+
+                <a
+                  href="#about"
+                  className="whitespace-nowrap rounded-full px-4 py-3 text-[10px] font-medium uppercase tracking-[0.13em] text-white/70 transition hover:bg-white/10 hover:text-white"
                 >
-                  All Pieces
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => setSelectedCategory("Earrings")}
-                  className={`hover:text-[#B8976C] transition pb-1 border-b-2 ${
-                    selectedCategory === "Earrings" ? "border-[#B8976C] text-[#B8976C]" : "border-transparent"
-                  }`}
-                >
-                  Earrings
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => setSelectedCategory("Necklaces")}
-                  className={`hover:text-[#B8976C] transition pb-1 border-b-2 ${
-                    selectedCategory === "Necklaces" ? "border-[#B8976C] text-[#B8976C]" : "border-transparent"
-                  }`}
-                >
-                  Necklaces
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => setSelectedCategory("Bracelets")}
-                  className={`hover:text-[#B8976C] transition pb-1 border-b-2 ${
-                    selectedCategory === "Bracelets" ? "border-[#B8976C] text-[#B8976C]" : "border-transparent"
-                  }`}
-                >
-                  Bracelets
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => setSelectedCategory("Rings")}
-                  className={`hover:text-[#B8976C] transition pb-1 border-b-2 ${
-                    selectedCategory === "Rings" ? "border-[#B8976C] text-[#B8976C]" : "border-transparent"
-                  }`}
-                >
-                  Rings
-                </button>
-              </li>
-              <li>
-                <a href="#about" className="hover:text-[#B8976C] transition">
-                  Our Story
+                  About
                 </a>
-              </li>
-            </ul>
 
-            {/* Action Icons */}
-            <div className="flex items-center gap-2 sm:gap-4">
-              {/* Search Toggle / Input */}
+              </div>
+            </div>
+
+            {/* Right: Action icons */}
+            <div className="flex flex-1 items-center justify-end gap-1 sm:gap-2">
+
+              {/* Search */}
               <div className="relative">
+
                 {searchOpen ? (
-                  <div className="flex items-center bg-white border border-[#B8976C]/60 rounded-full px-3 py-1.5 shadow-sm">
-                    <Search className="w-4 h-4 text-[#B8976C] mr-2 shrink-0" />
+                  <div className="absolute right-0 top-1/2 z-50 flex w-[250px] -translate-y-1/2 items-center gap-2 rounded-full border border-white/25 bg-[#211810]/90 px-4 py-2.5 shadow-xl backdrop-blur-2xl sm:w-[290px]">
+
+                    <Search size={17} className="shrink-0 text-white/60" />
+
                     <input
                       type="text"
-                      placeholder="Search jewelry..."
+                      placeholder="Search jewellery..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="bg-transparent text-xs text-[#1C1917] outline-none w-32 sm:w-48 placeholder:text-stone-400"
                       autoFocus
+                      className="w-full bg-transparent text-xs text-white outline-none placeholder:text-white/40"
                     />
+
                     <button
                       onClick={() => {
                         setSearchQuery("");
                         setSearchOpen(false);
                       }}
-                      className="text-stone-400 hover:text-stone-600 ml-1"
+                      aria-label="Close search"
+                      className="text-white/60 transition hover:text-white"
                     >
-                      <X className="w-3.5 h-3.5" />
+                      <X size={16} />
                     </button>
                   </div>
                 ) : (
                   <button
                     onClick={() => setSearchOpen(true)}
-                    className="p-2 text-[#1C1917] hover:text-[#B8976C] transition rounded-full hover:bg-white"
-                    aria-label="Open search"
+                    className={iconButton}
+                    aria-label="Search"
                   >
-                    <Search className="w-5 h-5" />
+                    <Search size={19} strokeWidth={1.5} />
                   </button>
                 )}
+
               </div>
 
-              {/* Wishlist indicator */}
-              <div className="relative hidden sm:block">
-                <button
-                  onClick={() => {
-                    const el = document.getElementById("shop");
-                    if (el) el.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className="p-2 text-[#1C1917] hover:text-[#B8976C] transition rounded-full hover:bg-white"
-                  title="Your Wishlist"
-                  aria-label="View wishlist"
-                >
-                  <Heart className="w-5 h-5" />
-                  {wishlist.length > 0 && (
-                    <span className="absolute top-1 right-1 w-4 h-4 bg-[#B8976C] text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                      {wishlist.length}
-                    </span>
-                  )}
-                </button>
-              </div>
+              {/* Wishlist */}
+              <button
+                onClick={() => {
+                  const shop = document.getElementById("shop");
+                  if (shop) {
+                    shop.scrollIntoView({ behavior: "smooth" });
+                  }
+                }}
+                className={`${iconButton} hidden sm:flex`}
+                aria-label="Wishlist"
+              >
+                <Heart size={19} strokeWidth={1.5} />
 
-              {/* Cart History (Past Orders) Shortcut */}
+                {wishlist.length > 0 && (
+                  <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#D9B98E] px-1 text-[9px] font-semibold text-[#211810]">
+                    {wishlist.length}
+                  </span>
+                )}
+              </button>
+
+              {/* Order history */}
               <button
                 onClick={() => {
                   if (!user) {
@@ -214,48 +211,53 @@ export default function Navbar({
                     setIsHistoryOpen(true);
                   }
                 }}
-                className="p-2 text-[#1C1917] hover:text-[#B8976C] transition rounded-full hover:bg-white relative"
-                title="Cart History & Past Orders"
-                aria-label="View cart history"
+                className={`${iconButton} hidden sm:flex`}
+                aria-label="Order history"
               >
-                <History className="w-5 h-5" />
+                <History size={19} strokeWidth={1.5} />
+
                 {cartHistory.length > 0 && (
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-[#91724B] rounded-full"></span>
+                  <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-[#D9B98E]" />
                 )}
               </button>
 
-              {/* User Account Button with Dropdown */}
+              {/* User account */}
               <div className="relative">
+
                 {user ? (
                   <button
                     onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                    className="flex items-center gap-1.5 p-1.5 sm:px-3 sm:py-1.5 rounded-full bg-white border border-[#E7E2DA] hover:border-[#B8976C] text-xs font-medium text-[#1C1917] transition shadow-xs"
+                    className="flex h-10 items-center gap-2 rounded-full border border-white/20 bg-white/[0.10] px-2.5 text-white backdrop-blur-xl transition hover:bg-white/20 sm:px-3"
                   >
-                    <div className="w-6 h-6 rounded-full bg-[#1C1917] text-[#DFC4A1] flex items-center justify-center text-xs font-semibold">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#E8D4B8] text-[10px] font-semibold text-[#211810]">
                       {user.name.charAt(0).toUpperCase()}
                     </div>
-                    <span className="hidden md:inline max-w-[90px] truncate">{user.name.split(" ")[0]}</span>
-                    <ChevronDown className="w-3 h-3 text-stone-500" />
+
+                    <span className="hidden max-w-[75px] truncate text-[10px] font-medium sm:inline">
+                      {user.name.split(" ")[0]}
+                    </span>
+
+                    <ChevronDown size={13} className="text-white/60" />
                   </button>
                 ) : (
                   <button
                     onClick={() => setIsAuthModalOpen(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#1C1917] hover:bg-[#1C1917] hover:text-white text-xs font-medium tracking-wider transition uppercase"
+                    className="flex h-10 items-center gap-2 rounded-full border border-white/30 bg-white/[0.08] px-3.5 text-[10px] font-medium uppercase tracking-[0.15em] text-white backdrop-blur-xl transition hover:bg-white/20"
                   >
-                    <UserIcon className="w-4 h-4" />
-                    <span className="hidden sm:inline">Sign In</span>
+                    <UserIcon size={16} strokeWidth={1.5} />
+                    <span className="hidden sm:inline">Account</span>
                   </button>
                 )}
 
-                {/* Account dropdown menu */}
+                {/* User dropdown */}
                 {user && userDropdownOpen && (
-                  <div
-                    className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-[#E7E2DA] p-3 text-xs z-50 animate-fade-in"
-                    onMouseLeave={() => setUserDropdownOpen(false)}
-                  >
-                    <div className="border-b border-stone-100 pb-3 mb-2 px-2">
-                      <p className="font-semibold text-stone-900 text-sm">{user.name}</p>
-                      <p className="text-stone-500 truncate">{user.email}</p>
+                  <div className="absolute right-0 top-14 z-50 w-64 overflow-hidden rounded-2xl border border-white/15 bg-[#211810]/90 p-3 text-white shadow-2xl backdrop-blur-2xl">
+
+                    <div className="border-b border-white/10 px-3 pb-3">
+                      <p className="text-sm font-medium">{user.name}</p>
+                      <p className="mt-1 truncate text-[11px] text-white/50">
+                        {user.email}
+                      </p>
                     </div>
 
                     <button
@@ -263,13 +265,15 @@ export default function Navbar({
                         setUserDropdownOpen(false);
                         setIsHistoryOpen(true);
                       }}
-                      className="w-full flex items-center justify-between p-2 hover:bg-[#FAF8F5] rounded-xl text-stone-700 transition"
+                      className="mt-2 flex w-full items-center justify-between rounded-xl px-3 py-3 text-xs text-white/80 transition hover:bg-white/10 hover:text-white"
                     >
-                      <div className="flex items-center gap-2">
-                        <History className="w-4 h-4 text-[#B8976C]" />
-                        <span>Cart History ({cartHistory.length})</span>
-                      </div>
-                      <span className="text-[10px] text-stone-400">View</span>
+                      <span className="flex items-center gap-3">
+                        <History size={16} />
+                        Order History
+                      </span>
+                      <span className="text-white/40">
+                        {cartHistory.length}
+                      </span>
                     </button>
 
                     <button
@@ -277,95 +281,102 @@ export default function Navbar({
                         setUserDropdownOpen(false);
                         setIsCartOpen(true);
                       }}
-                      className="w-full flex items-center justify-between p-2 hover:bg-[#FAF8F5] rounded-xl text-stone-700 transition"
+                      className="flex w-full items-center justify-between rounded-xl px-3 py-3 text-xs text-white/80 transition hover:bg-white/10 hover:text-white"
                     >
-                      <div className="flex items-center gap-2">
-                        <ShoppingBag className="w-4 h-4 text-[#B8976C]" />
-                        <span>Active Cart ({cart.total_items})</span>
-                      </div>
-                      <span className="text-[10px] text-stone-400">Open</span>
+                      <span className="flex items-center gap-3">
+                        <ShoppingBag size={16} />
+                        My Shopping Bag
+                      </span>
+                      <span className="text-white/40">
+                        {cart.total_items}
+                      </span>
                     </button>
 
-                    <div className="border-t border-stone-100 pt-2 mt-2">
+                    <div className="mt-2 border-t border-white/10 pt-2">
                       <button
                         onClick={() => {
                           setUserDropdownOpen(false);
                           logout();
                         }}
-                        className="w-full flex items-center gap-2 p-2 hover:bg-rose-50 text-rose-600 rounded-xl transition font-medium"
+                        className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-xs text-red-300 transition hover:bg-red-400/10"
                       >
-                        <LogOut className="w-4 h-4" />
-                        <span>Sign Out</span>
+                        <LogOut size={16} />
+                        Sign Out
                       </button>
                     </div>
                   </div>
                 )}
+
               </div>
 
-              {/* Shopping Cart Button */}
+              {/* Shopping bag */}
               <button
                 onClick={() => setIsCartOpen(true)}
-                className="relative flex items-center gap-2 px-3.5 py-2 rounded-full bg-[#1C1917] text-white hover:bg-[#292524] transition shadow-sm group"
-                aria-label={`Shopping Cart with ${cart.total_items} items`}
+                className="group relative ml-1 flex h-10 items-center gap-2 rounded-full border border-white/30 bg-white/[0.14] px-3.5 text-white shadow-sm backdrop-blur-xl transition hover:bg-white/25 sm:px-4"
+                aria-label={`Shopping bag with ${cart.total_items} items`}
               >
-                <ShoppingBag className="w-4 h-4 text-[#DFC4A1] group-hover:scale-110 transition-transform" />
-                <span className="text-xs font-semibold tracking-wider">
+                <ShoppingBag
+                  size={17}
+                  strokeWidth={1.5}
+                  className="transition-transform group-hover:-translate-y-0.5"
+                />
+
+                <span className="text-[11px] font-medium">
                   {cart.total_items}
                 </span>
               </button>
+
+              {/* Mobile menu */}
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className={`${iconButton} lg:hidden`}
+                aria-label="Toggle menu"
+              >
+                {mobileMenuOpen ? (
+                  <X size={21} />
+                ) : (
+                  <Menu size={21} />
+                )}
+              </button>
+
             </div>
           </div>
         </div>
 
-        {/* Mobile menu dropdown */}
+        {/* Mobile navigation */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-[#E7E2DA] bg-[#FAF8F5] px-6 py-4 space-y-3 animate-fade-in text-xs uppercase tracking-widest font-medium">
-            <button
-              onClick={() => {
-                setSelectedCategory("all");
-                setMobileMenuOpen(false);
-              }}
-              className="block w-full text-left py-2 hover:text-[#B8976C]"
-            >
-              All Pieces
-            </button>
-            <button
-              onClick={() => {
-                setSelectedCategory("Earrings");
-                setMobileMenuOpen(false);
-              }}
-              className="block w-full text-left py-2 hover:text-[#B8976C]"
-            >
-              Earrings
-            </button>
-            <button
-              onClick={() => {
-                setSelectedCategory("Necklaces");
-                setMobileMenuOpen(false);
-              }}
-              className="block w-full text-left py-2 hover:text-[#B8976C]"
-            >
-              Necklaces
-            </button>
-            <button
-              onClick={() => {
-                setSelectedCategory("Bracelets");
-                setMobileMenuOpen(false);
-              }}
-              className="block w-full text-left py-2 hover:text-[#B8976C]"
-            >
-              Bracelets
-            </button>
-            <button
-              onClick={() => {
-                setSelectedCategory("Rings");
-                setMobileMenuOpen(false);
-              }}
-              className="block w-full text-left py-2 hover:text-[#B8976C]"
-            >
-              Rings
-            </button>
-            <div className="pt-2 border-t border-stone-200">
+          <div className="absolute left-4 right-4 top-full mt-3 overflow-hidden rounded-2xl border border-white/15 bg-[#211810]/90 p-4 shadow-2xl backdrop-blur-2xl lg:hidden">
+
+            <p className="mb-3 px-3 text-[9px] uppercase tracking-[0.3em] text-white/40">
+              Explore Luna
+            </p>
+
+            <div className="space-y-1">
+              {categories.map((category) => (
+                <button
+                  key={category.value}
+                  onClick={() => selectCategory(category.value)}
+                  className={`flex w-full items-center justify-between rounded-xl px-3 py-3 text-left text-xs uppercase tracking-[0.12em] transition ${selectedCategory === category.value
+                      ? "bg-white/15 text-white"
+                      : "text-white/65 hover:bg-white/10 hover:text-white"
+                    }`}
+                >
+                  {category.label}
+                  <ArrowUpRight size={14} className="opacity-50" />
+                </button>
+              ))}
+
+              <a
+                href="#about"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-between rounded-xl px-3 py-3 text-xs uppercase tracking-[0.12em] text-white/65 transition hover:bg-white/10 hover:text-white"
+              >
+                Our Story
+                <ArrowUpRight size={14} className="opacity-50" />
+              </a>
+            </div>
+
+            <div className="mt-3 border-t border-white/10 pt-3">
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
@@ -375,16 +386,16 @@ export default function Navbar({
                     setIsAuthModalOpen(true);
                   }
                 }}
-                className="flex items-center gap-2 py-2 text-[#B8976C]"
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-xs text-white/70 hover:bg-white/10"
               >
-                <History className="w-4 h-4" />
-                <span>View Cart History & Orders</span>
+                <History size={16} />
+                Order History
               </button>
             </div>
           </div>
         )}
+
       </nav>
     </header>
   );
 }
-

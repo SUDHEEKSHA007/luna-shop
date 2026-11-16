@@ -236,148 +236,172 @@ function StoreContent() {
       <FeaturesBanner />
 
       {/* Shop Catalog Section */}
-      <main id="shop" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 w-full flex-1">
-        {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
-          <div className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.25em] font-semibold text-[#91724B]">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Curated Haute Pieces</span>
-          </div>
-          <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-light text-stone-900 tracking-tight">
-            Our Signature Collection
-          </h2>
-          <div className="w-16 h-[2px] bg-[#B8976C] mx-auto mt-2" />
-          <p className="text-xs sm:text-sm text-stone-500 font-light max-w-md mx-auto pt-1">
-            Sculpted with recycled precious metals and organic freshwater pearls, hand-finished for everyday luminosity.
-          </p>
-        </div>
 
-        {/* Filter and Controls Toolbar */}
-        <div className="mb-10 space-y-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#E7E2DA]">
-            {/* Category Pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-2 md:pb-0 scrollbar-none">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`px-4 py-2 rounded-full text-xs font-medium tracking-wider uppercase transition shrink-0 ${
-                    selectedCategory.toLowerCase() === cat.toLowerCase()
-                      ? "bg-[#1C1917] text-[#DFC4A1] shadow-xs"
-                      : "bg-white text-stone-600 hover:bg-stone-100 border border-stone-200"
-                  }`}
-                >
-                  {cat === "all" ? "All Pieces" : cat}
-                </button>
-              ))}
+      <main
+        id="shop"
+        className="mx-auto w-full max-w-[1600px] flex-1 px-5 py-20 sm:px-8 lg:px-12 lg:py-28"
+      >
+        {/* Editorial collection heading */}
+        <section className="mb-14 lg:mb-20">
+          <div className="flex flex-col items-center text-center">
+            <span className="mb-5 text-[10px] uppercase tracking-[0.35em] text-[#A18462]">
+              The Luna Collection
+            </span>
+
+            <h2 className="font-serif text-4xl font-normal tracking-[-0.04em] text-[#29231E] sm:text-5xl lg:text-6xl">
+              Objects of Adornment
+            </h2>
+
+            <p className="mt-5 max-w-md text-xs font-light leading-7 tracking-wide text-[#898075] sm:text-sm">
+              Considered details. Timeless silhouettes.
+              Pieces made to become part of your story.
+            </p>
+          </div>
+        </section>
+
+        {/* Catalogue navigation */}
+        <section>
+          <div className="mb-8 flex flex-col gap-5 border-b border-[#E8E2D9] pb-5 lg:flex-row lg:items-center lg:justify-between">
+            {/* Categories */}
+            <div className="flex items-center gap-7 overflow-x-auto scrollbar-none">
+              {categories.map((cat) => {
+                const active =
+                  selectedCategory.toLowerCase() === cat.toLowerCase();
+
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`relative shrink-0 pb-2 text-[10px] uppercase tracking-[0.18em] transition-colors duration-300 ${active
+                        ? "text-[#29231E]"
+                        : "text-[#A49A8F] hover:text-[#29231E]"
+                      }`}
+                  >
+                    {cat === "all" ? "All pieces" : cat}
+
+                    {active && (
+                      <span className="absolute bottom-[-1px] left-0 h-[1px] w-full bg-[#29231E]" />
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Right Controls: Sort & Wishlist Toggle */}
-            <div className="flex items-center gap-3 self-end md:self-auto">
-              {/* Wishlist only button */}
+            {/* Catalogue controls */}
+            <div className="flex items-center justify-between gap-5">
               <button
                 onClick={() => setShowWishlistOnly(!showWishlistOnly)}
-                className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-medium transition border ${
-                  showWishlistOnly
-                    ? "bg-rose-50 border-rose-200 text-rose-600 shadow-xs"
-                    : "bg-white border-stone-200 text-stone-600 hover:bg-stone-50"
-                }`}
+                className={`flex items-center gap-2 text-[10px] uppercase tracking-[0.14em] transition-colors ${showWishlistOnly
+                    ? "text-[#A65E5E]"
+                    : "text-[#81776D] hover:text-[#29231E]"
+                  }`}
               >
-                <Heart className={`w-3.5 h-3.5 ${showWishlistOnly ? "fill-rose-500" : ""}`} />
-                <span>Wishlist ({wishlist.length})</span>
+                <Heart
+                  size={14}
+                  strokeWidth={1.5}
+                  className={showWishlistOnly ? "fill-current" : ""}
+                />
+                Saved ({wishlist.length})
               </button>
 
-              {/* Sort Selector */}
-              <div className="relative inline-flex items-center bg-white border border-stone-200 rounded-full px-3 py-1.5 shadow-xs">
-                <ArrowUpDown className="w-3.5 h-3.5 text-stone-400 mr-2" />
+              <div className="flex items-center gap-2 text-[#81776D]">
+                <span className="text-[10px] uppercase tracking-[0.14em]">
+                  Sort
+                </span>
+
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="bg-transparent text-xs text-stone-800 outline-none pr-3 cursor-pointer"
+                  className="max-w-[145px] cursor-pointer bg-transparent py-1 text-[10px] uppercase tracking-[0.1em] text-[#29231E] outline-none"
                 >
-                  <option value="popular">Most Popular</option>
-                  <option value="new">New Arrivals</option>
-                  <option value="price-asc">Price: Low to High</option>
-                  <option value="price-desc">Price: High to Low</option>
-                  <option value="rating">Highest Rated</option>
+                  <option value="popular">Most popular</option>
+                  <option value="new">New arrivals</option>
+                  <option value="price-asc">Price: Low to high</option>
+                  <option value="price-desc">Price: High to low</option>
+                  <option value="rating">Highest rated</option>
                 </select>
               </div>
             </div>
           </div>
 
-          {/* Active Filter Badges */}
+          {/* Active filters */}
           {(searchQuery || selectedCategory !== "all" || showWishlistOnly) && (
-            <div className="flex items-center gap-2 flex-wrap text-xs text-stone-500 pt-1">
-              <span>Active filters:</span>
+            <div className="mb-7 flex flex-wrap items-center gap-x-4 gap-y-2 text-[10px] uppercase tracking-[0.12em] text-[#94887B]">
+              <span>Showing filtered results</span>
+
               {selectedCategory !== "all" && (
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white border border-stone-200 text-stone-800 font-medium">
-                  Category: {selectedCategory}
-                  <button onClick={() => setSelectedCategory("all")} className="hover:text-stone-900">
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
+                <button onClick={() => setSelectedCategory("all")}>
+                  {selectedCategory} ×
+                </button>
               )}
+
               {searchQuery && (
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white border border-stone-200 text-stone-800 font-medium">
-                  Search: "{searchQuery}"
-                  <button onClick={() => setSearchQuery("")} className="hover:text-stone-900">
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
+                <button onClick={() => setSearchQuery("")}>
+                  "{searchQuery}" ×
+                </button>
               )}
+
               {showWishlistOnly && (
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-rose-50 border border-rose-200 text-rose-700 font-medium">
-                  Wishlist Only
-                  <button onClick={() => setShowWishlistOnly(false)} className="hover:text-rose-900">
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
+                <button onClick={() => setShowWishlistOnly(false)}>
+                  Saved pieces ×
+                </button>
               )}
+
               <button
                 onClick={() => {
                   setSelectedCategory("all");
                   setSearchQuery("");
                   setShowWishlistOnly(false);
                 }}
-                className="text-[11px] text-[#91724B] hover:underline font-semibold ml-1"
+                className="text-[#A18462] underline underline-offset-4"
               >
                 Clear all
               </button>
             </div>
           )}
-        </div>
 
-        {/* Product Grid */}
-        {filteredProducts.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-3xl border border-[#E7E2DA] p-8 space-y-4">
-            <div className="w-16 h-16 rounded-full bg-[#FAF8F5] border border-stone-200 flex items-center justify-center text-stone-400 mx-auto">
-              <Search className="w-7 h-7" />
+          {/* Product count */}
+          <div className="mb-6 flex items-center justify-between">
+            <span className="text-[10px] uppercase tracking-[0.16em] text-[#968B7F]">
+              {filteredProducts.length} pieces
+            </span>
+            <span className="hidden text-[10px] uppercase tracking-[0.16em] text-[#968B7F] sm:block">
+              Selected for everyday elegance
+            </span>
+          </div>
+
+          {/* Product catalogue */}
+          {filteredProducts.length === 0 ? (
+            <div className="py-24 text-center">
+              <h3 className="font-serif text-3xl font-normal text-[#29231E]">
+                Nothing here just yet.
+              </h3>
+
+              <p className="mt-3 text-xs font-light text-[#898075]">
+                Try another category or search for a different piece.
+              </p>
+
+              <button
+                onClick={() => {
+                  setSelectedCategory("all");
+                  setSearchQuery("");
+                  setShowWishlistOnly(false);
+                }}
+                className="mt-7 border-b border-[#A18462] pb-1 text-[10px] uppercase tracking-[0.18em] text-[#8B704F]"
+              >
+                Explore all pieces
+              </button>
             </div>
-            <h3 className="font-serif text-2xl font-medium text-stone-800">
-              No matching pieces found
-            </h3>
-            <p className="text-xs text-stone-500 max-w-sm mx-auto leading-relaxed">
-              We couldn't find any jewelry matching your current filter criteria. Try adjusting your search term or category.
-            </p>
-            <button
-              onClick={() => {
-                setSelectedCategory("all");
-                setSearchQuery("");
-                setShowWishlistOnly(false);
-              }}
-              className="px-6 py-2.5 rounded-full bg-[#1C1917] text-white text-xs font-semibold tracking-wider uppercase hover:bg-[#B8976C] transition"
-            >
-              Reset Filters
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-            {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        )}
+          ) : (
+            <div className="grid grid-cols-2 gap-x-4 gap-y-12 sm:grid-cols-2 sm:gap-x-7 sm:gap-y-16 lg:grid-cols-3 lg:gap-x-9 xl:grid-cols-4 xl:gap-x-10">
+              {filteredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          )}
+        </section>
       </main>
+
 
       {/* Brand Story Editorial Section */}
       <BrandStory />
